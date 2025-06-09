@@ -34,8 +34,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('admin.menu-items.index');
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
-        // --- AKHIR PERUBAHAN ---
+        return redirect()->intended(route('home', absolute: false));
     }
 
     /**

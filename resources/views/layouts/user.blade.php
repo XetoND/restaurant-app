@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Gourmet Palace')</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     {{-- Anda bisa memindahkan CSS ini ke file CSS terpisah (misal: public/css/user.css) --}}
@@ -419,7 +420,7 @@
                     <li class="cart-icon">
                         {{-- <a href="{{ route('cart.index') }}"><i class="fas fa-shopping-cart"></i></a> Akan kita buat nanti --}}
                         <a href="#"><i class="fas fa-shopping-cart"></i></a>
-                        <span class="cart-count">0</span>
+                        <span class="cart-count">{{ $cartCount ?? 0 }}</span>
                     </li>
                 </ul>
             </nav>
@@ -476,9 +477,8 @@
                 <div class="footer-col">
                     <h3>Tautan Cepat</h3>
                     <ul class="footer-links">
-                        <li><a href="{{ route('dashboard') }}">Beranda</a></li>
+                        <li><a href="{{ route('menu.index') }}">Beranda</a></li>
                         <li><a href="{{ route('menu.index') }}">Menu</a></li>
-                        <li><a href="#location">Location</a></li>
                         @auth
                             <li><a href="{{ route('profile.edit') }}">Profile</a></li>
                         @else
