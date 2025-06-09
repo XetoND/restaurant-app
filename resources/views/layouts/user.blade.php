@@ -408,9 +408,8 @@
             </div>
             <nav>
                 <ul>
-                    <li><a href="{{ route('dashboard') }}">Beranda</a></li> {{-- Gunakan route helper Laravel --}}
+                    <li><a href="{{ route('menu.index') }}">Beranda</a></li> {{-- Gunakan route helper Laravel --}}
                     <li><a href="{{ route('menu.index') }}">Menu</a></li> {{-- Gunakan route helper Laravel --}}
-                    <li><a href="#location">Location</a></li> {{-- Tetap anchor link --}}
                     @auth
                         <li><a href="{{ route('profile.edit') }}">Profile</a></li> {{-- Untuk user yang sudah login --}}
                     @else
@@ -418,7 +417,8 @@
                         <li><a href="{{ route('register') }}">Register</a></li>
                     @endauth
                     <li class="cart-icon">
-                        <a href="{{ route('cart.index') }}"><i class="fas fa-shopping-cart"></i></a> {{-- Akan kita buat nanti --}}
+                        {{-- <a href="{{ route('cart.index') }}"><i class="fas fa-shopping-cart"></i></a> Akan kita buat nanti --}}
+                        <a href="#"><i class="fas fa-shopping-cart"></i></a>
                         <span class="cart-count">0</span>
                     </li>
                 </ul>

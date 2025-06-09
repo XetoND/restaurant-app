@@ -1,6 +1,6 @@
 {{-- resources/views/user/menu/index.blade.php --}}
 
-@extends('layouts.app') {{-- Sesuaikan dengan layout user/publik Anda --}}
+@extends('layouts.user')
 
 @section('title', 'Menu Kami - Gourmet Palace')
 

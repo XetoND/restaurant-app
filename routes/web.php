@@ -6,10 +6,8 @@ use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\MenuController;
 
 
-// Public routes
-Route::get('/', function () {
-    return view('welcome');
-});
+// Jadikan halaman menu sebagai halaman utama (home)
+Route::get('/', [MenuController::class, 'index'])->name('home');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -22,8 +20,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Public menu
-Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
+// Mengalihkan rute /menu lama ke halaman utama
+Route::redirect('/menu', '/')->name('menu.index');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('menu-items', App\Http\Controllers\Admin\MenuItemController::class);
