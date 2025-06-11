@@ -12,7 +12,7 @@
     .product-info img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 1.5rem; }
     .remove-btn { color: #e74c3c; background: none; border: none; cursor: pointer; font-size: 1.5rem; }
     .cart-summary { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .checkout-btn { display: block; width: 100%; padding: 1rem; background: var(--success); color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 1rem; transition: background-color 0.3s; }
+    .checkout-btn { display: block; width: 100%; padding: 1rem; background: var(--success); color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 1rem; transition: background-color 0.3s; border: none; cursor: pointer; }
     .checkout-btn:hover { background: #3aa14d; }
     .empty-cart { text-align: center; padding: 4rem; background: #fff; border-radius: 8px; }
     .cart-item-quantity { display: flex; align-items: center; }
@@ -83,7 +83,12 @@
                     <span class="summary-total">Total</span>
                     <span class="summary-price summary-total" id="grand-total">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
                 </div>
-                <a href="{{ route('order.create') }}" class="checkout-btn">Lanjutkan ke Pembayaran</a>
+                <form action="{{ route('order.store') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="checkout-btn">
+                        Check Out
+                    </button>
+                </form>
             </div>
         </div>
     @endif
@@ -93,19 +98,13 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Keluar jika tidak ada tabel keranjang, untuk menghindari error di halaman lain
     const cartTable = document.querySelector('.cart-table');
     if (!cartTable) return;
 
-    // Ambil CSRF token dari meta tag
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     // --- FUNGSI-FUNGSI UTAMA ---
 
-    /**
-     * Fungsi Debounce untuk menunda eksekusi fungsi.
-     * Berguna agar tidak mengirim request ke server pada setiap ketikan di input kuantitas.
-     */
     function debounce(func, delay = 500) {
         let timeoutId;
         return function(...args) {
@@ -116,23 +115,31 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    /**
-     * Fungsi untuk MENGIRIM UPDATE kuantitas ke server dan memperbarui tampilan.
-     */
+    function updateView(data) {
+        // Update subtotal per baris jika datanya ada
+        if (data.item_id && data.item_subtotal) {
+            const row = document.querySelector(`tr[data-id="${data.item_id}"]`);
+            if (row) {
+                row.querySelector('.subtotal').textContent = data.item_subtotal;
+            }
+        }
+        
+        // Update Ringkasan Pesanan
+        document.getElementById('subtotal').textContent = data.subtotal;
+        document.getElementById('tax').textContent = data.taxAmount;
+        document.getElementById('grand-total').textContent = data.grandTotal;
+    }
+
     function updateCart(cartItemId, quantity) {
         fetch(`/cart/update/${cartItemId}`, {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            },
+            headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json'},
             body: JSON.stringify({ quantity: quantity })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                updateView(data); // Panggil fungsi untuk update tampilan
+                updateView(data);
             } else {
                 alert(data.message || 'Gagal memperbarui keranjang.');
             }
@@ -141,26 +148,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Fungsi untuk MENGHAPUS item dari keranjang.
+     * FUNGSI untuk menghapus item dari keranjang.
      */
     function removeCartItem(cartItemId) {
-        fetch(`/cart/remove/${cartItemId}`, { // Anda perlu membuat route ini: Route::delete(...)
+        fetch(`/cart/destroy/${cartItemId}`, { // Pastikan route Anda cocok
             method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json'
-            }
+            headers: {'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json'}
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Hapus baris dari tabel
+                // Hapus baris dari tabel untuk feedback instan
                 const row = document.querySelector(`tr[data-id="${cartItemId}"]`);
-                if (row) row.remove();
+                if (row) {
+                    row.remove();
+                }
                 
-                updateView(data); // Update total harga
-                
-                // Jika keranjang kosong, reload halaman untuk menampilkan pesan
+                // Update total harga di ringkasan pesanan
+                updateView(data);
+
+                // Jika keranjang menjadi kosong, reload halaman untuk menampilkan pesan
                 if (data.cart_is_empty) {
                     window.location.reload();
                 }
@@ -171,34 +178,11 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error removing item:', error));
     }
 
-    /**
-     * Fungsi untuk MEMPERBARUI TAMPILAN (VIEW) berdasarkan data dari server.
-     */
-    function updateView(data) {
-        // Update subtotal per item jika ada datanya
-        if (data.item_subtotal_formatted) {
-            const row = document.querySelector(`tr[data-id="${data.item_id}"]`);
-            if (row) {
-                row.querySelector('.subtotal').textContent = data.item_subtotal_formatted;
-            }
-        }
-        
-        // Update Ringkasan Pesanan
-        document.getElementById('subtotal').textContent = data.subtotal_formatted;
-        document.getElementById('tax').textContent = data.tax_formatted;
-        document.getElementById('grand-total').textContent = data.grand_total_formatted;
-
-        // (Opsional) Update jumlah item di ikon keranjang header
-        // const cartCountElement = document.querySelector('.cart-count');
-        // if(cartCountElement) cartCountElement.textContent = data.total_items;
-    }
-
 
     // --- EVENT LISTENERS ---
 
     const debouncedUpdateCart = debounce(updateCart);
 
-    // Listener utama pada tabel untuk semua aksi (tambah, kurang, hapus)
     cartTable.addEventListener('click', function(e) {
         const target = e.target;
         const row = target.closest('tr');
@@ -207,14 +191,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const cartItemId = row.dataset.id;
         const input = row.querySelector('.quantity-input');
         
-        // Aksi untuk tombol TAMBAH (+)
         if (target.classList.contains('increase-qty')) {
             let quantity = parseInt(input.value) + 1;
             input.value = quantity;
             updateCart(cartItemId, quantity);
         }
 
-        // Aksi untuk tombol KURANG (-)
         if (target.classList.contains('decrease-qty')) {
             let quantity = parseInt(input.value);
             if (quantity > 1) {
@@ -224,15 +206,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Aksi untuk tombol HAPUS (x)
+        /**
+         * KONDISI untuk Menangani klik pada tombol hapus.
+         */
         if (target.classList.contains('remove-btn')) {
+            // Tampilkan dialog konfirmasi sederhana
             if (confirm('Anda yakin ingin menghapus item ini dari keranjang?')) {
                 removeCartItem(cartItemId);
             }
         }
     });
 
-    // Listener untuk perubahan manual pada input kuantitas
     cartTable.addEventListener('input', function(e) {
         const target = e.target;
         if (target.classList.contains('quantity-input')) {

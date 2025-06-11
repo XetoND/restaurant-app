@@ -3,97 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    /**
-     * Menampilkan halaman checkout dengan ringkasan keranjang.
-     */
-    public function create()
-    {
-        $user = Auth::user();
-        $cartItems = $user->cartItems()->with('menuItem')->get();
-
-        // Jika keranjang kosong, jangan biarkan checkout, redirect ke halaman menu
-        if ($cartItems->isEmpty()) {
-            return redirect()->route('menu.index')->with('error', 'Keranjang Anda kosong!');
-        }
-
-        // Hitung total harga dari item di keranjang
-        $totalPrice = $cartItems->sum(function ($item) {
-            return $item->quantity * $item->menuItem->price;
-        });
-
-        // Tampilkan view checkout dan kirim data keranjang
-        return view('user.orders.checkout', compact('cartItems', 'totalPrice'));
-    }
+    const PAJAK_RATE = 0.12; // Pajak 12%
 
     /**
-     * Memproses dan menyimpan pesanan baru dari halaman checkout.
+     * Memproses keranjang menjadi pesanan.
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:20',
-            'customer_address' => 'required|string',
-        ]);
-
         $user = Auth::user();
         $cartItems = $user->cartItems()->with('menuItem')->get();
 
+        // 1. Pastikan keranjang tidak kosong
         if ($cartItems->isEmpty()) {
-            return redirect()->route('menu.index')->with('error', 'Tidak bisa checkout, keranjang Anda kosong.');
+            return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
         }
 
-        // Gunakan transaksi untuk memastikan semua data tersimpan atau tidak sama sekali
-        DB::transaction(function () use ($user, $cartItems, $request) {
-            // Hitung ulang total harga di sisi server untuk keamanan
-            $totalPrice = $cartItems->sum(function ($item) {
-                return $item->quantity * $item->menuItem->price;
-            });
+        // 2. Hitung ulang total di server untuk keamanan
+        $subtotal = $cartItems->sum(fn($item) => $item->quantity * $item->menuItem->price);
+        $taxAmount = $subtotal * self::PAJAK_RATE;
+        $grandTotal = $subtotal + $taxAmount;
 
-            // 1. Buat data pesanan baru di tabel 'orders'
+        // 3. Gunakan Database Transaction untuk keamanan data
+        try {
+            DB::beginTransaction();
+
+            // Buat entri di tabel 'orders'
             $order = Order::create([
-                'user_id' => $user->id,
-                'total_price' => $totalPrice,
-                'status' => 'pending', // Status awal pesanan
-                'customer_name' => $request->customer_name,
-                'customer_phone' => $request->customer_phone,
-                'customer_address' => $request->customer_address,
+                'user_id'        => $user->id,
+                'invoice_number' => 'INV-' . time() . '-' . $user->id, // Contoh nomor invoice unik
+                'total_amount'   => $subtotal,
+                'tax_amount'     => $taxAmount,
+                'grand_total'    => $grandTotal,
+                'status'         => 'pending', // Status awal pesanan
             ]);
 
-            // 2. Pindahkan setiap item dari keranjang ke tabel 'order_items'
-            foreach ($cartItems as $cartItem) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'menu_item_id' => $cartItem->menu_item_id,
-                    'quantity' => $cartItem->quantity,
-                    'price' => $cartItem->menuItem->price, // Simpan harga saat itu
+            // Pindahkan setiap item dari keranjang ke 'order_items'
+            foreach ($cartItems as $item) {
+                $order->items()->create([
+                    'menu_item_id' => $item->menu_item_id,
+                    'quantity'     => $item->quantity,
+                    'price'        => $item->menuItem->price, // Simpan harga saat itu
                 ]);
             }
 
-            // 3. Setelah berhasil, kosongkan keranjang pengguna
+            // 4. Kosongkan keranjang belanja pengguna
             $user->cartItems()->delete();
-        });
 
-        // Arahkan ke halaman sukses dengan pesan
-        return redirect()->route('order.success')->with('success', 'Pesanan Anda berhasil dibuat!');
-    }
+            DB::commit();
 
-    /**
-     * Menampilkan halaman konfirmasi bahwa pesanan berhasil.
-     */
-    public function success()
-    {
-        // Pastikan halaman ini hanya bisa diakses setelah berhasil membuat pesanan
-        if (!session('success')) {
-            return redirect()->route('menu.index');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Sebaiknya log error ini
+            return redirect()->route('cart.index')->with('error', 'Gagal memproses pesanan. Silakan coba lagi.');
         }
-        return view('user.orders.success');
+
+        // 5. Arahkan ke halaman sukses
+        // Anda bisa membuat halaman "Terima Kasih" atau "Histori Pesanan"
+        return redirect()->route('home')->with('success', 'Pesanan Anda berhasil dibuat! Nomor Invoice: ' . $order->invoice_number);
     }
 }
