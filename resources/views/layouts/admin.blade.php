@@ -137,7 +137,7 @@
   <header>
     <h1>Manajemen Menu</h1> {{-- Judul utama di header --}}
     <nav>
-      <a href="{{ route('dashboard') }}">Dashboard</a> {{-- Menggunakan helper route() Laravel --}}
+      <a href="#">Dashboard</a> {{-- Menggunakan helper route() Laravel --}}
       <a href="{{ route('profile.edit') }}">Profil</a> {{-- Menggunakan helper route() Laravel --}}
     </nav>
 

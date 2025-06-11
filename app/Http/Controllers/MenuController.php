@@ -14,10 +14,9 @@ class MenuController extends Controller
     {
         // Mengambil hanya menu item yang 'available' (tersedia)
         $menuItems = MenuItem::where('available', true)->get();
-
+        
         // Mengirim data menu item ke view
         return view('user.menu.index', compact('menuItems'));
     }
 
-    // Metode lain untuk keranjang, checkout, dll., akan ditambahkan di sini nanti
 }

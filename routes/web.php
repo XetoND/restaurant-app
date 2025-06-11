@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\MenuItemController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 
 
 // Jadikan halaman menu sebagai halaman utama (home)
@@ -21,9 +22,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Cart Routes
-Route::post('/cart/add/{menuItem}', [CartController::class, 'add'])->name('cart.add')->middleware('auth');
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index'); // Kita siapkan untuk nanti
+// Rute untuk Keranjang Belanja
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::patch('/cart/update/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/remove/{cartItem}', [CartController::class, 'destroy'])->name('cart.remove');
+
+    // API untuk mengambil data jumlah keranjang (untuk header)
+    Route::get('/cart/data', [CartController::class, 'getCartData'])->name('cart.data');
+
+// Rute untuk Proses Pemesanan
+    Route::get('/checkout', [OrderController::class, 'create'])->name('order.create');
+    Route::post('/checkout', [OrderController::class, 'store'])->name('order.store');
+    Route::get('/order/success', [OrderController::class, 'success'])->name('order.success');
 
 // Mengalihkan rute /menu lama ke halaman utama
 Route::redirect('/menu', '/')->name('menu.index');
