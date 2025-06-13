@@ -55,4 +55,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(CartItem::class);
     }
+    
+    /**
+     * Get all of the orders for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

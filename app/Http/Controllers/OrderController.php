@@ -65,6 +65,31 @@ class OrderController extends Controller
 
         // 5. Arahkan ke halaman sukses
         // Anda bisa membuat halaman "Terima Kasih" atau "Histori Pesanan"
-        return redirect()->route('home')->with('success', 'Pesanan Anda berhasil dibuat! Nomor Invoice: ' . $order->invoice_number);
+        return redirect()->route('menu.index')->with('success', 'Pesanan Anda berhasil dibuat! Nomor Invoice: ' . $order->invoice_number);
+    }
+
+    /**
+     * Menampilkan daftar pesanan milik pengguna.
+     */
+    public function index()
+    {
+        $orders = Auth::user()->orders()->with('items')->latest()->paginate(10);
+        return view('user.orders.index', compact('orders'));
+    }
+
+    /**
+     * Menampilkan detail satu pesanan.
+     */
+    public function show(Order $order)
+    {
+        // Pastikan pengguna hanya bisa melihat pesanannya sendiri
+        if (Auth::id() !== $order->user_id) {
+            abort(403, 'Anda tidak diizinkan mengakses halaman ini.');
+        }
+
+        // Eager load relasi 'items' dan 'menuItem' di dalam 'items'
+        $order->load('items.menuItem');
+        
+        return view('user.orders.show', compact('order'));
     }
 }

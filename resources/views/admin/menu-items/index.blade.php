@@ -1,78 +1,83 @@
-{{-- resources/views/admin/menu-items/index.blade.php --}}
-
 @extends('layouts.admin')
 
-@section('title', 'Manajemen Menu') {{-- Menggunakan section title dari layout --}}
+@section('title', 'Manajemen Menu')
 
 @section('content')
-<div class="container">
-    {{-- Hapus bagian "Tambah / Edit Menu" dari sini, karena akan ada di halaman create/edit terpisah --}}
+<div class="container-fluid">
 
-    <h2>Daftar Menu</h2>
+    <h1 class="h3 mb-2 text-gray-800">Daftar Menu</h1>
+    <p class="mb-4">Berikut adalah daftar semua menu yang tersedia di restoran. Anda dapat menambah, mengubah, atau menghapus menu dari daftar ini.</p>
 
-    {{-- Tombol "Tambah Menu Baru" --}}
-    <a href="{{ route('admin.menu-items.create') }}" class="btn btn-primary mb-3">Tambah Menu Baru</a>
+    <a href="{{ route('admin.menu-items.create') }}" class="btn btn-primary btn-icon-split mb-4">
+        <span class="icon text-white-50">
+            <i class="fas fa-plus"></i>
+        </span>
+        <span class="text">Tambah Menu Baru</span>
+    </a>
 
-    {{-- Pesan sukses/error dari session --}}
-    {{-- @if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Data Menu</h6>
         </div>
-    @endif --}}
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Gambar</th>
+                            <th>Nama</th>
+                            <th>Kategori</th> {{-- <-- PERUBAHAN DI SINI --}}
+                            <th>Harga</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($menuItems as $item)
+                        <tr>
+                            <td class="text-center">
+                                @if($item->image)
+                                    <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}" style="max-width: 80px; height: auto; border-radius: 5px;">
+                                @else
+                                    <small>Tanpa Gambar</small>
+                                @endif
+                            </td>
+                            <td>{{ $item->name }}</td>
+                            
+                            <td>{{ $item->category ?? 'Lainnya' }}</td>
 
-    <table id="menuTable">
-      <thead>
-        <tr>
-          <th>Gambar</th> {{-- Tambahkan kolom gambar --}}
-          <th>Nama</th>
-          <th>Harga</th>
-          <th>Deskripsi</th>
-          <th>Tersedia</th> {{-- Tambahkan kolom ketersediaan --}}
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{-- Data menu akan muncul di sini dari database --}}
-        @forelse($menuItems as $item)
-        <tr>
-            <td>
-                @if($item->image)
-                    <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}" width="100" style="max-height: 80px; object-fit: cover;">
-                @else
-                    <small>Tidak ada gambar</small>
-                @endif
-            </td>
-            <td>{{ $item->name }}</td>
-            <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
-            <td>{{ $item->description }}</td>
-            <td>
-                @if($item->available)
-                    <span style="color: green;">Tersedia</span>
-                @else
-                    <span style="color: red;">Tidak Tersedia</span>
-                @endif
-            </td>
-            <td class="actions">
-                <a href="{{ route('admin.menu-items.edit', $item->id) }}" class="btn edit">Edit</a>
-                <form action="{{ route('admin.menu-items.destroy', $item->id) }}" method="POST" style="display:inline-block;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn delete" onclick="return confirm('Apakah Anda yakin ingin menghapus menu ini?');">Hapus</button>
-                </form>
-            </td>
-        </tr>
-        @empty
-        <tr>
-            <td colspan="6" class="text-center">Belum ada menu yang ditambahkan.</td>
-        </tr>
-        @endforelse
-      </tbody>
-    </table>
+                            <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                            <td class="text-center">
+                                @if($item->available)
+                                    <span class="badge badge-success">Tersedia</span>
+                                @else
+                                    <span class="badge badge-danger">Kosong</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ route('admin.menu-items.edit', $item->id) }}" class="btn btn-warning btn-sm" title="Edit">
+                                    <i class="fas fa-pencil-alt"></i> Edit
+                                </a>
+                                <form action="{{ route('admin.menu-items.destroy', $item->id) }}" method="POST" style="display:inline-block; margin-left: 5px;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin menghapus menu ini?');">
+                                        <i class="fas fa-trash"></i> Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            {{-- PERUBAHAN DI SINI: colspan diubah menjadi 7 --}}
+                            <td colspan="7" class="text-center">Belum ada menu yang ditambahkan.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 </div>
-
 @endsection

@@ -13,6 +13,7 @@ class MenuItem extends Model
         'name',
         'description',
         'price',
+        'category',
         'image',
         'available',
     ];

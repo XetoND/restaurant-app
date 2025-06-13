@@ -36,6 +36,7 @@ class MenuItemController extends Controller
             'name' => 'required|string|max:255|unique:menu_items',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
+            'category' => 'required|string|in:Makanan,Minuman',
             'image' => 'nullable|image|max:2048',
             'available' => 'nullable|boolean',
         ]);
@@ -86,6 +87,7 @@ class MenuItemController extends Controller
             ],
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
+            'category' => 'required|string|in:Makanan,Minuman',
             'image' => 'nullable|image|max:2048',
             'available' => 'nullable|boolean',
         ]);
