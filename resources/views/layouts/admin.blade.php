@@ -15,12 +15,11 @@
       @stack('styles')
 
       <style>
-          /* Mengambil variabel warna dari tema user */
           :root {
               --theme-primary: #8b5a2b;
               --theme-secondary: #1a1a1a;
               --theme-accent: #c19a6b;
-              --theme-light: #f8f5f2; /* Latar belakang halaman utama */
+              --theme-light: #f8f5f2;
           }
 
           /* 1. Sidebar */
@@ -28,8 +27,8 @@
               width: 120px !important;
           }
           .bg-gradient-primary {
-              background-color: var(--theme-secondary); /* Ubah jadi hitam pekat */
-              background-image: none; /* Hapus gradien */
+              background-color: var(--theme-secondary);
+              background-image: none;
           }
           .sidebar-dark .nav-item .nav-link {
               color: rgba(255, 255, 255, 0.6);
@@ -37,7 +36,7 @@
           .sidebar-dark .nav-item.active .nav-link,
           .sidebar-dark .nav-item .nav-link:hover {
               color: white;
-              background-color: rgba(139, 90, 43, 0.2); /* Aksen coklat transparan */
+              background-color: rgba(139, 90, 43, 0.2);
           }
           .sidebar-dark .nav-item.active .nav-link i,
           .sidebar-dark .nav-item .nav-link:hover i {
@@ -64,7 +63,7 @@
               border-color: var(--theme-primary);
           }
           .btn-primary:hover {
-              background-color: #7a4f25; /* Sedikit lebih gelap saat hover */
+              background-color: #7a4f25;
               border-color: #7a4f25;
           }
           a, .page-item.active .page-link {

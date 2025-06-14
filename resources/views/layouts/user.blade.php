@@ -88,7 +88,7 @@
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1;
             border-radius: 5px;
-            overflow: hidden; /* Agar border-radius terlihat */
+            overflow: hidden;
         }
 
         .profile-dropdown-content a, .profile-dropdown-content button {
@@ -142,7 +142,6 @@
                             <span class="cart-count">0</span>
                         </li>
 
-                        {{-- IKON PROFIL DENGAN DROPDOWN BARU --}}
                         <li class="profile-dropdown">
                             <div class="profile-icon">
                                 <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=c19a6b&color=1a1a1a&bold=true" alt="User Profile">
@@ -158,7 +157,7 @@
                         </li>
 
                     @else
-                        {{-- Tampilan jika pengguna belum login (tamu) --}}
+                        {{-- Tampilan jika pengguna belum login --}}
                         <li><a href="{{ route('login') }}">Login</a></li>
                         <li><a href="{{ route('register') }}">Register</a></li>
                     @endauth
@@ -221,9 +220,6 @@
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // =================================================================
-        // Variabel dan Konstanta
-        // =================================================================
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const isLoggedIn = {{ auth()->check() ? 'true' : 'false' }};
         const modal = document.getElementById('itemDetailModal');
@@ -299,7 +295,7 @@
             }
         });
 
-        // Listener untuk semua aksi di dalam modal (delegasi event)
+        // Listener untuk semua aksi di dalam modal
         modal.addEventListener('click', function(event) {
             const target = event.target;
             const qtyInput = modal.querySelector('#quantity');

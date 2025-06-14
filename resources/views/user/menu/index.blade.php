@@ -4,7 +4,6 @@
 
 @push('styles')
 <style>
-    /* ... (semua CSS Anda tetap sama) ... */
     .menu-hero { background: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover; height: 300px; display: flex; align-items: center; text-align: center; position: relative; margin-top: 70px; }
     .menu-hero::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); }
     .menu-hero-content { position: relative; z-index: 1; color: white; width: 100%; padding: 0 20px; }
@@ -60,8 +59,6 @@
                         <span class="menu-item-category">{{ $item->category }}</span>
                         <h3 class="menu-item-title">{{ $item->name }}</h3>
                         <p class="menu-item-desc">{{ Str::limit($item->description, 80) }}</p>
-                        
-                        {{-- KODE TOMBOL YANG DIPERBAIKI --}}
                         <div class="menu-item-meta">
                             <span class="menu-item-price">Rp {{ number_format($item->price, 0, ',', '.') }}</span>
                             <button type="button" class="menu-item-btn">
@@ -92,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     filterButtons.forEach(button => {
         button.addEventListener('click', function (event) {
-            // Hentikan event agar tidak memicu modal
             event.stopPropagation();
 
             filterButtons.forEach(btn => btn.classList.remove('active'));
@@ -104,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const itemCategory = item.getAttribute('data-category');
                 if (filterValue === 'all' || itemCategory === filterValue) {
                     item.style.display = 'flex';
-                    // Tunda sedikit penambahan kelas agar transisi terlihat
                     setTimeout(() => {
                         item.classList.remove('hide');
                     }, 10);

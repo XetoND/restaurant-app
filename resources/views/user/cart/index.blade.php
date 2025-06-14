@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * FUNGSI untuk menghapus item dari keranjang.
      */
     function removeCartItem(cartItemId) {
-        fetch(`/cart/destroy/${cartItemId}`, { // Pastikan route Anda cocok
+        fetch(`/cart/destroy/${cartItemId}`, {
             method: 'DELETE',
             headers: {'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json'}
         })

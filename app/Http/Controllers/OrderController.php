@@ -19,17 +19,17 @@ class OrderController extends Controller
         $user = Auth::user();
         $cartItems = $user->cartItems()->with('menuItem')->get();
 
-        // 1. Pastikan keranjang tidak kosong
+        // Pastikan keranjang tidak kosong
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
         }
 
-        // 2. Hitung ulang total di server untuk keamanan
+        // Hitung ulang total di server untuk keamanan
         $subtotal = $cartItems->sum(fn($item) => $item->quantity * $item->menuItem->price);
         $taxAmount = $subtotal * self::PAJAK_RATE;
         $grandTotal = $subtotal + $taxAmount;
 
-        // 3. Gunakan Database Transaction untuk keamanan data
+        // Gunakan Database Transaction untuk keamanan data
         try {
             DB::beginTransaction();
 
@@ -52,14 +52,13 @@ class OrderController extends Controller
                 ]);
             }
 
-            // 4. Kosongkan keranjang belanja pengguna
+            // Kosongkan keranjang belanja pengguna
             $user->cartItems()->delete();
 
             DB::commit();
 
         } catch (\Exception $e) {
             DB::rollBack();
-            // Sebaiknya log error ini
             return redirect()->route('cart.index')->with('error', 'Gagal memproses pesanan. Silakan coba lagi.');
         }
 

@@ -28,7 +28,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
         
-        // Redirect based on user role
         if ($request->user()->role === 'admin') {
             return redirect()->route('admin.menu-items.index');
         }
