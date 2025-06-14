@@ -138,7 +138,7 @@ class CartController extends Controller
     }
 
     /**
-     * Mengambil jumlah total item di keranjang (biasanya untuk ikon di header).
+     * Mengambil jumlah total item di keranjang.
      */
     public function getCartData(): JsonResponse
     {
